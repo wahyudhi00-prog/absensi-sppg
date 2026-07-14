@@ -11,24 +11,24 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-  <!-- LAYAR LOGIN -->
+  <!-- LOGIN SCREEN -->
   <div id="admin-login-screen" class="fixed inset-0 bg-slate-900 z-[999] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center">
       <div class="mx-auto w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
         <i data-lucide="shield-alert" class="w-6 h-6"></i>
       </div>
-      <h3 class="font-extrabold text-slate-800 text-base">Panel Admin SPPG</h3>
+      <h3 class="font-extrabold text-slate-800 text-base">Panel Pengaman Admin</h3>
       <input type="password" id="input-pin" placeholder="Masukkan PIN (1234)" class="w-full mt-4 text-center py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-extrabold tracking-widest focus:outline-none">
       <button onclick="checkAdminLogin()" class="w-full mt-4 py-2.5 bg-slate-800 text-white font-bold text-xs rounded-xl">Buka Kunci</button>
     </div>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- DASHBOARD AREA -->
   <div id="admin-dashboard-area" class="hidden">
     <header class="bg-slate-800 text-white shadow-md sticky top-0 z-50">
       <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
         <h1 class="text-sm font-extrabold">ADMIN DASHBOARD</h1>
-        <button onclick="logoutAdmin()" class="px-3 py-1.5 bg-slate-700 rounded-lg text-[10px] font-bold">Keluar</button>
+        <button onclick="location.reload()" class="px-3 py-1.5 bg-slate-700 rounded-lg text-[10px] font-bold">Keluar</button>
       </div>
     </header>
 
@@ -39,36 +39,20 @@
         <button onclick="switchTab('admin')" id="btn-tab-admin" class="flex-1 py-2 text-xs font-semibold rounded-lg">Staf & GPS</button>
       </div>
 
-      <!-- SECTION: RIWAYAT -->
+      <!-- RIWAYAT -->
       <section id="tab-riwayat">
         <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="font-bold text-sm">Riwayat Absensi</h2>
-            <button onclick="downloadCSV()" class="px-3 py-1.5 bg-emerald-600 text-white text-[10px] rounded-lg font-bold">Download CSV</button>
-          </div>
-          <table class="w-full text-left text-xs">
-            <thead><tr class="text-slate-400 uppercase text-[9px]"><th>Nama</th><th>Masuk</th><th>Keluar</th></tr></thead>
-            <tbody id="log-table-body" class="divide-y divide-slate-100"></tbody>
-          </table>
+          <table class="w-full text-left text-xs"><tbody id="log-table-body"></tbody></table>
         </div>
       </section>
 
-      <!-- SECTION: REKAP -->
+      <!-- REKAP -->
       <section id="tab-rekap" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm">
-           <h2 class="font-bold text-sm mb-4">Rekapitulasi Kehadiran</h2>
-           <div class="flex gap-2 mb-4">
-             <input type="date" id="rekap-start" class="border p-2 rounded-xl text-xs w-full">
-             <input type="date" id="rekap-end" class="border p-2 rounded-xl text-xs w-full">
-             <button onclick="calculateRekap()" class="bg-emerald-600 text-white px-4 rounded-xl text-xs font-bold">Cek</button>
-           </div>
-           <div id="rekap-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm"><div id="rekap-grid"></div></div>
       </section>
 
-      <!-- SECTION: PENGATURAN -->
+      <!-- PENGATURAN -->
       <section id="tab-admin" class="hidden space-y-6">
-        <!-- Geoloc Setup -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
           <h2 class="font-bold text-sm mb-4">Geofencing Dapur</h2>
           <a href="https://www.google.com/maps" target="_blank" class="block w-full text-center py-2 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl mb-4 border border-blue-200">Buka Google Maps (Cari Koordinat)</a>
@@ -76,12 +60,15 @@
             <input type="number" id="config-lat" step="0.000001" placeholder="Latitude" class="p-2 bg-slate-50 border rounded-xl text-xs">
             <input type="number" id="config-lng" step="0.000001" placeholder="Longitude" class="p-2 bg-slate-50 border rounded-xl text-xs">
           </div>
+          <button onclick="getCurrentLocationForConfig()" class="w-full py-2 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl mb-2">Gunakan Lokasi HP Saya</button>
           <button onclick="saveLocationConfig()" class="w-full py-3 bg-slate-800 text-white text-xs font-bold rounded-xl">Simpan Koordinat Dapur</button>
         </div>
 
-        <!-- Tambah Staf -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-          <h2 class="font-bold text-sm mb-4">Tambah Staf</h2>
+          <h2 class="font-bold text-sm mb-4">Daftar Staf</h2>
+          <table class="w-full text-left text-xs mb-4">
+            <tbody id="admin-karyawan-tbody"></tbody>
+          </table>
           <div class="grid grid-cols-1 gap-2">
             <input type="text" id="new-karyawan-id" placeholder="ID (Contoh: SPPG-006)" class="p-2 bg-slate-50 border rounded-xl text-xs">
             <input type="text" id="new-karyawan-nama" placeholder="Nama Lengkap" class="p-2 bg-slate-50 border rounded-xl text-xs">
@@ -93,8 +80,19 @@
   </div>
 
   <script>
-    // --- DATABASE & LOGIC ---
-    let databaseKaryawan = JSON.parse(localStorage.getItem('sppg_db_karyawan')) || {};
+    const defaultKaryawan = {
+      "SPPG-001": { nama: "Ahmad Fauzi", divisi: "Pengolahan" },
+      "SPPG-002": { nama: "Siti Aminah", divisi: "Pemorsian" },
+      "SPPG-003": { nama: "Budi Santoso", divisi: "Distribusi" }
+    };
+
+    // INIALISASI DATABASE AMAN
+    let databaseKaryawan = JSON.parse(localStorage.getItem('sppg_db_karyawan'));
+    if (!databaseKaryawan || Object.keys(databaseKaryawan).length === 0) {
+      databaseKaryawan = { ...defaultKaryawan };
+      localStorage.setItem('sppg_db_karyawan', JSON.stringify(databaseKaryawan));
+    }
+    
     let logPresensi = JSON.parse(localStorage.getItem('sppg_log_presensi')) || [];
 
     function checkAdminLogin() {
@@ -107,22 +105,22 @@
 
     function initDashboard() {
       renderLogTable();
-      renderStafList();
+      renderAdminKaryawanTable();
       document.getElementById('config-lat').value = localStorage.getItem('sppg_office_lat') || -6.200000;
       document.getElementById('config-lng').value = localStorage.getItem('sppg_office_lng') || 106.816666;
     }
 
     function switchTab(tabId) {
-      document.getElementById('tab-riwayat').classList.add('hidden');
-      document.getElementById('tab-rekap').classList.add('hidden');
-      document.getElementById('tab-admin').classList.add('hidden');
+      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
       document.getElementById('tab-' + tabId).classList.remove('hidden');
     }
 
-    function saveLocationConfig() {
-      localStorage.setItem('sppg_office_lat', document.getElementById('config-lat').value);
-      localStorage.setItem('sppg_office_lng', document.getElementById('config-lng').value);
-      alert("Lokasi tersimpan!");
+    function renderAdminKaryawanTable() {
+      const tbody = document.getElementById('admin-karyawan-tbody');
+      tbody.innerHTML = "";
+      Object.keys(databaseKaryawan).forEach(id => {
+        tbody.innerHTML += `<tr><td class="p-2">${id}</td><td class="p-2">${databaseKaryawan[id].nama}</td></tr>`;
+      });
     }
 
     function addKaryawanManual() {
@@ -132,8 +130,23 @@
         databaseKaryawan[id] = { nama, divisi: "Staf" };
         localStorage.setItem('sppg_db_karyawan', JSON.stringify(databaseKaryawan));
         alert("Staf ditambahkan!");
-        renderStafList();
+        renderAdminKaryawanTable();
       }
+    }
+
+    function saveLocationConfig() {
+      localStorage.setItem('sppg_office_lat', document.getElementById('config-lat').value);
+      localStorage.setItem('sppg_office_lng', document.getElementById('config-lng').value);
+      alert("Lokasi tersimpan!");
+    }
+
+    function getCurrentLocationForConfig() {
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                document.getElementById('config-lat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('config-lng').value = pos.coords.longitude.toFixed(6);
+            });
+        }
     }
 
     function renderLogTable() {
@@ -142,11 +155,6 @@
         tbody.innerHTML += `<tr><td class="p-2">${log.id_karyawan}</td><td class="p-2">${log.jam_masuk}</td><td class="p-2">${log.jam_keluar || '-'}</td></tr>`;
       });
     }
-
-    function renderStafList() {}
-    function logoutAdmin() { location.reload(); }
-    function downloadCSV() { alert("Download fitur aktif di versi lanjut."); }
-    function calculateRekap() { alert("Kalkulasi rekap aktif."); }
   </script>
 </body>
 </html>
