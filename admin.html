@@ -136,6 +136,27 @@
       <!-- SECTION 3: PENGATURAN & DATABASE STAF -->
       <section id="tab-admin" class="space-y-6 hidden">
         
+        <!-- SECTION: TAMBAH RELAWAN BARU -->
+        <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
+          <h2 class="font-extrabold text-slate-800 text-sm flex items-center gap-1.5 mb-4">
+            <i data-lucide="user-plus" class="text-emerald-500 w-5 h-5"></i>
+            Tambah Relawan Baru
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" id="new-karyawan-id" placeholder="ID (Contoh: SPPG-006)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none">
+            <input type="text" id="new-karyawan-nama" placeholder="Nama Lengkap" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none">
+            <select id="new-karyawan-divisi" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none">
+              <option value="Pengolahan">Pengolahan</option>
+              <option value="Pemorsian">Pemorsian</option>
+              <option value="Distribusi">Distribusi</option>
+              <option value="Persiapan">Persiapan</option>
+            </select>
+          </div>
+          <button onclick="addKaryawanManual()" class="w-full mt-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition">
+            Tambah Relawan Sekarang
+          </button>
+        </div>
+
         <!-- PENGATURAN GEOLOKASI -->
         <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
           <h2 class="font-extrabold text-slate-800 text-sm flex items-center gap-1.5 mb-2">
@@ -490,6 +511,28 @@
         tbody.appendChild(tr);
       });
       lucide.createIcons();
+    }
+
+    function addKaryawanManual() {
+      const id = document.getElementById('new-karyawan-id').value.toUpperCase();
+      const nama = document.getElementById('new-karyawan-nama').value;
+      const divisi = document.getElementById('new-karyawan-divisi').value;
+
+      if (!id || !nama) {
+        showToast("Error", "ID dan Nama wajib diisi.", false);
+        return;
+      }
+      if (databaseKaryawan[id]) {
+        showToast("Error", "ID ini sudah terdaftar.", false);
+        return;
+      }
+
+      databaseKaryawan[id] = { nama, divisi };
+      saveDatabaseKaryawan();
+      showToast("Sukses", "Relawan baru berhasil ditambahkan.", true);
+      
+      document.getElementById('new-karyawan-id').value = "";
+      document.getElementById('new-karyawan-nama').value = "";
     }
 
     function deleteKaryawan(id) {
